@@ -3,7 +3,7 @@ package info.androidhive.paging;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 
-import info.androidhive.paging.ui.main.MainFragment;
+import info.androidhive.paging.ui.main.AnimalListFragment;
 
 public class MainActivity extends AppCompatActivity {
 
@@ -13,7 +13,7 @@ public class MainActivity extends AppCompatActivity {
         setContentView(R.layout.main_activity);
         if (savedInstanceState == null) {
             getSupportFragmentManager().beginTransaction()
-                    .replace(R.id.container, MainFragment.newInstance())
+                    .replace(R.id.container, AnimalListFragment.newInstance())
                     .commitNow();
         }
     }
