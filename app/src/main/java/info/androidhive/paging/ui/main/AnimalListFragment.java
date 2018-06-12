@@ -2,6 +2,7 @@ package info.androidhive.paging.ui.main;
 
 import android.arch.lifecycle.Observer;
 import android.arch.lifecycle.ViewModelProviders;
+import android.arch.paging.PagedList;
 import android.os.Bundle;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
@@ -17,6 +18,7 @@ import android.view.ViewGroup;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.concurrent.ExecutionException;
 
 import butterknife.BindView;
 import butterknife.ButterKnife;
@@ -26,7 +28,9 @@ import info.androidhive.paging.db.DataGenerator;
 import info.androidhive.paging.db.entity.AnimalEntity;
 import info.androidhive.paging.utils.MyDividerItemDecoration;
 
-public class AnimalListFragment extends Fragment {
+public class AnimalListFragment extends Fragment implements AnimalsAdapter.AnimalsAdapterListener {
+
+    private static final String TAG = AnimalListFragment.class.getSimpleName();
 
     private AnimalListViewModel mViewModel;
     private Unbinder unbinder;
@@ -53,9 +57,10 @@ public class AnimalListFragment extends Fragment {
     public void onViewCreated(View view, @Nullable Bundle savedInstanceState) {
         super.onViewCreated(view, savedInstanceState);
 
-        mAdapter = new AnimalsAdapter(getActivity());
+        mAdapter = new AnimalsAdapter(this);
         RecyclerView.LayoutManager mLayoutManager = new LinearLayoutManager(getActivity());
         recyclerView.setLayoutManager(mLayoutManager);
+        recyclerView.setHasFixedSize(true);
         recyclerView.setItemAnimator(new DefaultItemAnimator());
         recyclerView.addItemDecoration(new MyDividerItemDecoration(getActivity(), DividerItemDecoration.VERTICAL, 16));
         recyclerView.setAdapter(mAdapter);
@@ -66,31 +71,27 @@ public class AnimalListFragment extends Fragment {
         super.onActivityCreated(savedInstanceState);
         mViewModel = ViewModelProviders.of(this).get(AnimalListViewModel.class);
 
-        mViewModel.getAnimals().observe(this, new Observer<List<AnimalEntity>>() {
+        mViewModel.getAnimals().observe(this, new Observer<PagedList<AnimalEntity>>() {
             @Override
-            public void onChanged(@Nullable List<AnimalEntity> animals) {
+            public void onChanged(@Nullable PagedList<AnimalEntity> animals) {
                 if (animals == null || animals.size() == 0) {
                     // add data when data is empty
-                    insertAnimals();
+                    mViewModel.insertSampleData();
                 }
 
-                mAdapter.setData(animals);
+                mAdapter.submitList(animals);
             }
         });
-    }
-
-    /**
-     * TODO
-     * Data insertion should be done a separate class
-     * Added here for testing
-     */
-    private void insertAnimals() {
-        mViewModel.insertAnimals(DataGenerator.getSampleAnimalList());
     }
 
     @Override
     public void onDestroy() {
         super.onDestroy();
         unbinder.unbind();
+    }
+
+    @Override
+    public void onAnimalClick(int id) {
+        // no-op
     }
 }
